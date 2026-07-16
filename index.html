@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>MineCraft: End Poem</title>
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    cursor: pointer;
+    background: black;
+}
+.logos {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: fit-content;
+    will-change: transform;
+}
+.logos img {
+    display: block;
+    height: auto;
+}
+.main-logo {
+    width: 1024px;
+}
+@font-face {
+    font-family: 'Minecraftia';
+    src: url('assets/fonts/Minecraftia.ttf');
+}
+.poem-container {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.poem-text {
+    font-family: 'Minecraftia', monospace;
+    font-size: 25.5px;
+    max-width: 1024px;
+    width: 100%;
+    margin: 0 auto;
+    text-align: left;
+    letter-spacing: 0.1px;
+}
+.poem-line {
+    line-height: calc(25.5px + 18px / var(--dpr, 1));
+    vertical-align: baseline;
+}
+.poem-line:last-child {
+    margin-bottom: 0;
+}
+.obf {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    vertical-align: baseline;
+    box-sizing: border-box;
+    position: relative;
+    top: 0.1em;
+}
+.char-with-diacritic {
+    position: relative;
+    vertical-align: baseline;
+}
+span:not(.obf):not(.char-with-diacritic) {
+    vertical-align: baseline;
+}
+.edition-logo {
+    display: block;
+    width: 30%;
+    height: auto;
+}
+#click-hint {
+    position: fixed;
+    inset: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    pointer-events: none;
+    color: #fff;
+    font-family: 'Minecraftia', monospace;
+    font-size: 32px;
+    animation: blink 2s infinite;
+}
+#click-hint.show {
+    display: flex;
+    pointer-events: auto;
+    animation: blink 2s infinite;
+}
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+</style>
+</head>
+<body>
+    <audio id="bgm" src="assets/audio/alpha.ogg" preload="auto"></audio>
+    <div class="logos">
+        <img src="assets/images/minecraft.png" class="main-logo" id="mainLogo">
+        <img src="assets/images/edition.png" id="editionLogo" class="edition-logo">
+        <div class="poem-container">
+            <div class="poem-text" id="poemText"></div>
+        </div>
+    </div>
+
+    <div id="click-hint">Click anywhere to continue.</div>
+
+    <script>
+const rawText = `§3I see the player you mean.
+
+§2PLAYERNAME?
+
+§3Yes. Take care. It has reached a higher level now. It can read our thoughts.
+
+§2That doesn't matter. It thinks we are part of the game.
+
+§3I like this player. It played well. It did not give up.
+
+§2It is reading our thoughts as though they were words on a screen.
+
+§3That is how it chooses to imagine many things, when it is deep in the dream of a game.
+
+§2Words make a wonderful interface. Very flexible. And less terrifying than staring at the reality behind the screen.
+
+§3They used to hear voices. Before players could read. Back in the days when those who did not play called the players witches, and warlocks. And players dreamed they flew through the air, on sticks powered by demons.
+
+§2What did this player dream?
+
+§3This player dreamed of sunlight and trees. Of fire and water. It dreamed it created. And it dreamed it destroyed. It dreamed it hunted, and was hunted. It dreamed of shelter.
+
+§2Hah, the original interface. A million years old, and it still works. But what true structure did this player create, in the reality behind the screen?
+
+§3It worked, with a million others, to sculpt a true world in a fold of the §f§k§a§b§3, and created a §f§k§a§b§3 for §f§k§a§b§3, in the §f§k§a§b§3.
+
+§2It cannot read that thought.
+
+§3No. It has not yet achieved the highest level. That, it must achieve in the long dream of life, not the short dream of a game.
+
+§2Does it know that we love it? That the universe is kind?
+
+§3Sometimes, through the noise of its thoughts, it hears the universe, yes.
+
+§2But there are times it is sad, in the long dream. It creates worlds that have no summer, and it shivers under a black sun, and it takes its sad creation for reality.
+
+§3To cure it of sorrow would destroy it. The sorrow is part of its own private task. We cannot interfere.
+
+§2Sometimes when they are deep in dreams, I want to tell them, they are building true worlds in reality. Sometimes I want to tell them of their importance to the universe. Sometimes, when they have not made a true connection in a while, I want to help them to speak the word they fear.
+
+§3It reads our thoughts.
+
+§2Sometimes I do not care. Sometimes I wish to tell them, this world you take for truth is merely §f§k§a§b§2 and §f§k§a§b§2, I wish to tell them that they are §f§k§a§b§2 in the §f§k§a§b§2. They see so little of reality, in their long dream.
+
+§3And yet they play the game.
+
+§2But it would be so easy to tell them...
+
+§3Too strong for this dream. To tell them how to live is to prevent them living.
+
+§2I will not tell the player how to live.
+
+§3The player is growing restless.
+
+§2I will tell the player a story.
+
+§3But not the truth.
+
+§2No. A story that contains the truth safely, in a cage of words. Not the naked truth that can burn over any distance.
+
+§3Give it a body, again.
+
+§2Yes. Player...
+
+§3Use its name.
+
+§2PLAYERNAME. Player of games.
+
+§3Good.
+
+§2Take a breath, now. Take another. Feel air in your lungs. Let your limbs return. Yes, move your fingers. Have a body again, under gravity, in air. Respawn in the long dream. There you are. Your body touching the universe again at every point, as though you were separate things. As though we were separate things.
+
+§3Who are we? Once we were called the spirit of the mountain. Father sun, mother moon. Ancestral spirits, animal spirits. Jinn. Ghosts. The green man. Then gods, demons. Angels. Poltergeists. Aliens, extraterrestrials. Leptons, quarks. The words change. We do not change.
+
+§2We are the universe. We are everything you think isn't you. You are looking at us now, through your skin and your eyes. And why does the universe touch your skin, and throw light on you? To see you, player. To know you. And to be known. I shall tell you a story.
+
+§2Once upon a time, there was a player.
+
+§3The player was you, PLAYERNAME.
+
+§2Sometimes it thought itself human, on the thin crust of a spinning globe of molten rock. The ball of molten rock circled a ball of blazing gas that was three hundred and thirty thousand times more massive than it. They were so far apart that light took eight minutes to cross the gap. The light was information from a star, and it could burn your skin from a hundred and fifty million kilometres away.
+
+§2Sometimes the player dreamed it was a miner, on the surface of a world that was flat, and infinite. The sun was a square of white. The days were short; there was much to do; and death was a temporary inconvenience.
+
+§3Sometimes the player dreamed it was lost in a story.
+
+§2Sometimes the player dreamed it was other things, in other places. Sometimes these dreams were disturbing. Sometimes very beautiful indeed. Sometimes the player woke from one dream into another, then woke from that into a third.
+
+§3Sometimes the player dreamed it watched words on a screen.
+
+§2Let's go back.
+
+§2The atoms of the player were scattered in the grass, in the rivers, in the air, in the ground. A woman gathered the atoms; she drank and ate and inhaled; and the woman assembled the player, in her body.
+
+§2And the player awoke, from the warm, dark world of its mother's body, into the long dream.
+
+§2And the player was a new story, never told before, written in letters of DNA. And the player was a new program, never run before, generated by a sourcecode a billion years old. And the player was a new human, never alive before, made from nothing but milk and love.
+
+§3You are the player. The story. The program. The human. Made from nothing but milk and love.
+
+§2Let's go further back.
+
+§2The seven billion billion billion atoms of the player's body were created, long before this game, in the heart of a star. So the player, too, is information from a star. And the player moves through a story, which is a forest of information planted by a man called Julian, on a flat, infinite world created by a man called Markus, that exists inside a small, private world created by the player, who inhabits a universe created by...
+
+§3Shush. Sometimes the player created a small, private world that was soft and warm and simple. Sometimes hard, and cold, and complicated. Sometimes it built a model of the universe in its head; flecks of energy, moving through vast empty spaces. Sometimes it called those flecks "electrons" and "protons".
+
+§2Sometimes it called them "planets" and "stars".
+
+§2Sometimes it believed it was in a universe that was made of energy that was made of offs and ons; zeros and ones; lines of code. Sometimes it believed it was playing a game. Sometimes it believed it was reading words on a screen.
+
+§3You are the player, reading words...
+
+§2Shush... Sometimes the player read lines of code on a screen. Decoded them into words; decoded words into meaning; decoded meaning into feelings, emotions, theories, ideas, and the player started to breathe faster and deeper and realised it was alive, it was alive, those thousand deaths had not been real, the player was alive
+
+§3You. You. You are alive.
+
+§2and sometimes the player believed the universe had spoken to it through the sunlight that came through the shuffling leaves of the summer trees
+
+§3and sometimes the player believed the universe had spoken to it through the light that fell from the crisp night sky of winter, where a fleck of light in the corner of the player's eye might be a star a million times as massive as the sun, boiling its planets to plasma in order to be visible for a moment to the player, walking home at the far side of the universe, suddenly smelling food, almost at the familiar door, about to dream again
+
+§2and sometimes the player believed the universe had spoken to it through the zeros and ones, through the electricity of the world, through the scrolling words on a screen at the end of a dream
+
+§3and the universe said I love you
+
+§2and the universe said you have played the game well
+
+§3and the universe said everything you need is within you
+
+§2and the universe said you are stronger than you know
+
+§3and the universe said you are the daylight
+
+§2and the universe said you are the night
+
+§3and the universe said the darkness you fight is within you
+
+§2and the universe said the light you seek is within you
+
+§3and the universe said you are not alone
+
+§2and the universe said you are not separate from every other thing
+
+§3and the universe said you are the universe tasting itself, talking to itself, reading its own code
+
+§2and the universe said I love you because you are love.
+
+§3And the game was over and the player woke up from the dream. And the player began a new dream. And the player dreamed again, dreamed better. And the player was the universe. And the player was love.
+
+§3You are the player.
+
+§2Wake up.`;
+const postcreditsText = `§f"Twenty years from now you will be more disappointed by the things that you didn't do than by the ones you did do. So throw off the bowlines. Sail away from the safe harbor. Catch the trade winds in your sails. Explore. Dream. Discover." §7- Unknown`;
+
+        const speed = 0.71;
+        const speedBoost = 2.3;
+        const superSpeed = 10.818;
+
+        const poemContainer = document.querySelector('.poem-container');
+        const audio = document.getElementById('bgm');
+        const logos = document.querySelector('.logos');
+        const hint = document.getElementById('click-hint');
+
+        const WIDE_CHARS = `ABCDEFGHIJKLMNOPQRSTUVWXYZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞĀĂĄĆĈĊČĎĐĒĔĖĘĚĜĞĠĢĤĦĨĪĬĮİĲĴĶĹĻĽĿŁŃŅŇŊŌŎŐŒŔŖŘŚŜŞŠŢŤŦŨŪŬŮŰŲŴŶŸŹŻŽƂƏƵƷǤǦǨǪǮǺǼǾȘȚΆΈΉΊΌΎΏΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯѢѲѴҊҌҎҐҒҖҘҚҜҠҢҪҮҰҲҶҸҺӀӁӅӇӉӍӒӔӘӢӤӦӨӬӮӰẀẂẄẞỲ`;
+        const NARROW_CHARS = `!"#$%&'()*+,-./0123456789:;<=>?@[\]^_\`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿×ßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿāăąćĉċčďđēĕėęěĝğġģĥħĩīĭįıĳĵķĸĺļľŀłńņňŉŋōŏőœŕŗřśŝşšţťŧũūŭůűųŵŷźżžſƃƒƶǥǧǩǫǯǻǽǿșțȷəʒˆˇˉˊˋ˘˙˚˛˜˝ʹ͵;΄΅·ΐάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϗабвгдежзийклмнопрстуфхцчшщъыьэюяѐёђѓєѕіїјљњћќѝўџѣѳѵҋҍҏґғҗҙқҝҡңҫүұҳҷҹһӂӆӈӊӎӏӓӕәӣӥӧөӭӯӱẁẃẅỳ‘’‚‛“”„‟†‡•‣…‰′″‵‶‹›⁄⁰ⁱ⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉₩€₮₱₴₸₹₺℅ℓ№℗℠™℮⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞←↑→↓↔↕↖↗↘↙∅∆√∞∫∴≈≠≤≥■□▲△▶▷○●♀♂♩♪♫♭♮♯⟨⟩ﬁﬂ`;
+
+        const minecraftColors = {
+            '0': '#000000', '1': '#0000AA', '2': '#00AA00', '3': '#00AAAA',
+            '4': '#AA0000', '5': '#AA00AA', '6': '#FFAA00', '7': '#AAAAAA',
+            '8': '#555555', '9': '#5555FF', 'a': '#55FF55', 'b': '#55FFFF',
+            'c': '#FF5555', 'd': '#FF55FF', 'e': '#FFFF55', 'f': '#FFFFFF'
+        };
+
+        let WIDE_CHAR_WIDTH = 0;
+        let NARROW_CHAR_WIDTH = 0;
+        let CHAR_HEIGHT = 0;
+        let BASELINE_OFFSET = 0;
+
+        function initCharMetrics() {
+            const poemText = document.getElementById('poemText');
+            const computedStyle = getComputedStyle(poemText);
+            const fontSize = parseFloat(computedStyle.fontSize);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.font = `${fontSize}px Minecraftia`;
+            WIDE_CHAR_WIDTH = ctx.measureText('M').width;
+            NARROW_CHAR_WIDTH = ctx.measureText('i').width;
+            const tempSpan = document.createElement('span');
+            tempSpan.style.font = `${fontSize}px Minecraftia`;
+            tempSpan.style.fontFamily = 'Minecraftia, monospace';
+            tempSpan.style.fontSize = `${fontSize}px`;
+            tempSpan.style.lineHeight = '1';
+            tempSpan.style.display = 'inline-block';
+            tempSpan.style.position = 'absolute';
+            tempSpan.style.visibility = 'hidden';
+            tempSpan.style.verticalAlign = 'baseline';
+            tempSpan.textContent = 'AgÅ';
+            document.body.appendChild(tempSpan);
+            CHAR_HEIGHT = tempSpan.offsetHeight;
+            const baselineHelper = document.createElement('span');
+            baselineHelper.style.font = tempSpan.style.font;
+            baselineHelper.style.fontSize = tempSpan.style.fontSize;
+            baselineHelper.style.verticalAlign = 'baseline';
+            baselineHelper.style.display = 'inline-block';
+            baselineHelper.style.position = 'absolute';
+            baselineHelper.style.visibility = 'hidden';
+            baselineHelper.style.lineHeight = '0';
+            baselineHelper.textContent = 'x';
+            document.body.appendChild(baselineHelper);
+            const tempRect = tempSpan.getBoundingClientRect();
+            const baselineRect = baselineHelper.getBoundingClientRect();
+            BASELINE_OFFSET = baselineRect.top - tempRect.top;
+            document.body.removeChild(tempSpan);
+            document.body.removeChild(baselineHelper);
+        }
+
+        let count3 = 0;
+        let count2 = 0;
+
+        function parseMinecraftFormat(text) {
+            const obfSeed = [5,6,3,6,5,6,3,6,6,4,5,5,6,6,6,6,3,4,4,4,5,6,3,3,5,5,4,4,4,5];
+            let obfCount = 0;
+            let result = '';
+            let i = 0;
+            let currentColor = '#ffffff';
+            let isBold = false;
+            let isStrikethrough = false;
+            let isUnderline = false;
+            let isItalic = false;
+            let isObfuscated = false;
+
+            function buildSpace() {
+                const spaceWidth = 12;
+                let style = `font-family: sans-serif; vertical-align: baseline; display: inline-block; width: ${spaceWidth}px; text-align: center;`;
+                if (isBold) style += ' font-weight: bold;';
+                if (isStrikethrough && isUnderline) {
+                    style += ' text-decoration: line-through underline;';
+                } else {
+                    if (isStrikethrough) style += ' text-decoration: line-through;';
+                    if (isUnderline) style += ' text-decoration: underline;';
+                }
+                if (isItalic) style += ' font-style: italic;';
+                return `<span style="${style}"> </span>`;
+            }
+
+            function resetFormatting() {
+                isBold = false;
+                isStrikethrough = false;
+                isUnderline = false;
+                isItalic = false;
+                isObfuscated = false;
+            }
+
+            function buildNormalChar(ch) {
+                let style = `color: ${currentColor};`;
+                if (isBold) style += ' font-weight: bold;';
+                if (isStrikethrough && isUnderline) {
+                    style += ' text-decoration: line-through underline;';
+                } else {
+                    if (isStrikethrough) style += ' text-decoration: line-through;';
+                    if (isUnderline) style += ' text-decoration: underline;';
+                }
+                if (isItalic) style += ' font-style: italic;';
+                const hasDiacritic = /[ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞĀĂĄĆĈĊČĎĐĒĔĖĘĚĜĞĠĢĤĦĨĪĬĮİĲĴĶĹĻĽĿŁŃŅŇŊŌŎŐŒŔŖŘŚŜŞŠŢŤŦŨŪŬŮŰŲŴŶŸŹŻŽƂƏƵƷǤǦǨǪǮǺǼǾȘȚΆΈΉΊΌΎΏΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯѢѲѴҊҌҎҐҒҖҘҚҜҠҢҪҮҰҲҶҸҺӀӁӅӇӉӍӒӔӘӢӤӦӨӬӮӰẀẂẄẞỲ]/.test(ch);
+                if (hasDiacritic) {
+                    return `<span class="char-with-diacritic" style="${style} vertical-align: baseline; position: relative; top: ${-BASELINE_OFFSET * 0.5}px;">${ch}</span>`;
+                } else {
+                    return `<span style="${style} vertical-align: baseline;">${ch}</span>`;
+                }
+            }
+
+            function buildObfuscatedBlock(blockContent) {
+                if (!blockContent) return '';
+                const spans = blockContent.split('').map(ch => {
+                    if (ch === ' ') return ' ';
+                    const widthCat = (WIDE_CHARS.includes(ch) || ch === 'm' || ch === 'w') ? 'wide' : 'narrow';
+                    const charSet = widthCat === 'wide' ? WIDE_CHARS : NARROW_CHARS;
+                    const fixedWidth = WIDE_CHAR_WIDTH;
+                    const randomChar = charSet[Math.floor(Math.random() * charSet.length)];
+                    let style = `color: ${currentColor};`;
+                    if (isBold) style += ' font-weight: bold;';
+                    if (isStrikethrough && isUnderline) {
+                        style += ' text-decoration: line-through underline;';
+                    } else {
+                        if (isStrikethrough) style += ' text-decoration: line-through;';
+                        if (isUnderline) style += ' text-decoration: underline;';
+                    }
+                    if (isItalic) style += ' font-style: italic;';
+                    return `<span class="obf" data-width="${widthCat}" 
+                        style="${style} width: ${fixedWidth}px; height: ${CHAR_HEIGHT}px; line-height: ${CHAR_HEIGHT}px; vertical-align: baseline; position: relative; top: ${-BASELINE_OFFSET}px;">${randomChar}</span>`;
+                }).join('');
+                return `<span style="white-space: nowrap;">${spans}</span>`;
+            }
+
+            let obfBuffer = '';
+
+            function flushObfBuffer() {
+                if (obfBuffer) {
+                    result += buildObfuscatedBlock(obfBuffer);
+                }
+            }
+
+            while (i < text.length) {
+                if (text[i] === '§' && i + 1 < text.length) {
+                    const code = text[i + 1].toLowerCase();
+                    i += 2;
+
+                    if (code === 'k' &&
+                        i + 3 < text.length &&
+                        text[i] === '§' && text[i + 1] === 'a' &&
+                        text[i + 2] === '§' && text[i + 3] === 'b') {
+                        flushObfBuffer();
+                        i += 4;
+                        let colorCode = '';
+                        let afterColor = null;
+                        if (i + 1 < text.length && text[i] === '§' && (text[i + 1] === '3' || text[i + 1] === '2')) {
+                            colorCode = text[i + 1];
+                            i += 2;
+                            afterColor = minecraftColors[colorCode];
+                        }
+                        const lengths3 = [6, 6, 5, 3];
+                        const lengths2 = [5, 6, 3, 6];
+                        let N = 0;
+                        if (colorCode === '3') {
+                            N = lengths3[count3 % lengths3.length];
+                            count3++;
+                        } else if (colorCode === '2') {
+                            N = lengths2[count2 % lengths2.length];
+                            count2++;
+                        } else {
+                            N = 6;
+                        }
+                        let blockContent = '';
+                        for (let t = 0; t < N; t++) {
+                            const charSet = Math.random() < 0.5 ? WIDE_CHARS : NARROW_CHARS;
+                            const ch = charSet[Math.floor(Math.random() * charSet.length)];
+                            blockContent += ch;
+                        }
+                        const savedColor = currentColor;
+                        currentColor = '#ffffff';
+                        result += buildObfuscatedBlock(blockContent);
+                        currentColor = afterColor !== null ? afterColor : savedColor;
+                        isObfuscated = false;
+                        continue;
+                    }
+
+                    if (/^[0-9a-f]$/.test(code)) {
+                        if (minecraftColors.hasOwnProperty(code)) {
+                            flushObfBuffer();
+                            currentColor = minecraftColors[code];
+                            resetFormatting();
+                        }
+                        continue;
+                    }
+
+                    switch (code) {
+                        case 'k':
+                            isObfuscated = true;
+                            break;
+                        case 'l':
+                            isBold = true;
+                            break;
+                        case 'm':
+                            isStrikethrough = true;
+                            break;
+                        case 'n':
+                            isUnderline = true;
+                            break;
+                        case 'o':
+                            isItalic = true;
+                            break;
+                        case 'r':
+                            flushObfBuffer();
+                            currentColor = '#ffffff';
+                            resetFormatting();
+                            break;
+                        default:
+                            break;
+                    }
+                    continue;
+                }
+
+                const ch = text[i];
+                if (isObfuscated) {
+                    obfBuffer += ch;
+                } else {
+                    flushObfBuffer();
+                    if (ch === ' ') {
+                        result += buildSpace();
+                    } else {
+                        result += buildNormalChar(ch);
+                    }
+                }
+                i++;
+            }
+            flushObfBuffer();
+            return result;
+        }
+
+        let obfBuffer = '';
+
+        let animFrameId = null;
+
+        function startObfuscation() {
+            function updateObf() {
+                const obfSpans = document.querySelectorAll('.obf');
+                obfSpans.forEach(span => {
+                    const width = span.dataset.width;
+                    const charSet = width === 'wide' ? WIDE_CHARS : NARROW_CHARS;
+                    span.textContent = charSet[Math.floor(Math.random() * charSet.length)];
+                });
+                animFrameId = requestAnimationFrame(updateObf);
+            }
+            updateObf();
+        }
+
+        function buildPoem(playerName) {
+            const replacedText = rawText.replace(/PLAYERNAME/g, playerName);
+            const lines = replacedText.split('\n').filter(line => line.trim() !== '');
+            const container = document.getElementById('poemText');
+            const bodyHTML = lines.map((line, index) => {
+                const parsed = parseMinecraftFormat(line);
+                const cls = (index === lines.length - 1) ? 'poem-line last-body-line' : 'poem-line';
+                return `<p class="${cls}">${parsed}</p>`;
+            }).join('');
+            const postcreditsParsed = parseMinecraftFormat(postcreditsText);
+            const postcreditsHTML = `<p class="poem-line postcredits-line">${postcreditsParsed}</p>`;
+            container.innerHTML = bodyHTML + postcreditsHTML;
+        }
+
+        let spacePressed = false;
+        let ctrlPressed = false;
+        let currentSpeed = speed;
+
+        function updateSpeed() {
+            if (spacePressed && ctrlPressed) {
+                currentSpeed = superSpeed;
+            } else if (spacePressed) {
+                currentSpeed = speedBoost;
+            } else {
+                currentSpeed = speed;
+            }
+        }
+
+        const dpr = devicePixelRatio || 1;
+        document.documentElement.style.setProperty('--dpr', dpr);
+
+        (() => {
+            const main = document.getElementById('mainLogo');
+            const edition = document.getElementById('editionLogo');
+            main.style.width = Math.max(1024 / dpr, 200) + 'px';
+            edition.style.width = Math.max(512 / dpr, 100) + 'px';
+            edition.style.marginTop = -107 / dpr + 'px';
+        })();
+
+        let started = false;
+        let direction = 1;
+        let animationId = null;
+        let poemTotalHeight = 0;
+        let waitingForClick = false;
+
+        function calculatePoemHeight() {
+            poemContainer.offsetHeight;
+            const poemRect = poemContainer.getBoundingClientRect();
+            const extraDistance = 25 * 60 * speed;
+            poemTotalHeight = poemRect.height + extraDistance;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const extraOffset = 220;
+            const containerHeight = logos.offsetHeight;
+            const initialOffset = containerHeight + extraOffset;
+            logos.style.transform = `translateX(-50%) translateY(${initialOffset}px)`;
+        });
+
+        function start(finalName) {
+            if (started) return;
+            started = true;
+
+            const extraOffset = 220;
+            const containerHeight = logos.offsetHeight;
+            const initialOffset = containerHeight + extraOffset;
+            let currentBottom = -initialOffset;
+            logos.style.transform = `translateX(-50%) translateY(${initialOffset}px)`;
+
+            document.fonts.ready.then(() => {
+                buildPoem(finalName);
+                startObfuscation();
+
+                const lineHeight = 25.5 + 18 / dpr;
+                document.querySelectorAll('.poem-line').forEach(line => {
+                    line.style.lineHeight = `${lineHeight}px`;
+                });
+
+                document.querySelectorAll('.poem-line:not(.last-body-line):not(.postcredits-line)').forEach(el => {
+                    el.style.marginBottom = (100 / dpr) + 'px';
+                });
+                document.querySelectorAll('.last-body-line').forEach(el => {
+                    el.style.marginBottom = '0';
+                });
+                document.querySelectorAll('.postcredits-line').forEach(el => {
+                    el.style.marginTop = (250 / dpr) + 'px';
+                });
+
+                const marginTop = 150 / dpr;
+                poemContainer.style.marginTop = marginTop + 'px';
+
+                audio.play().catch(() => {});
+                calculatePoemHeight();
+
+                function animate() {
+                    currentBottom += currentSpeed * direction;
+                    logos.style.transform = `translateX(-50%) translateY(${-currentBottom}px)`;
+                    const poemRect = poemContainer.getBoundingClientRect();
+                    const poemTop = poemRect.top;
+                    if (direction === 1 && poemTop + poemTotalHeight <= 0) {
+                    cancelAnimationFrame(animationId);
+                    const fadeInterval = setInterval(() => {
+                        if (audio.volume > 0.1) {
+                            audio.volume -= 0.1;
+                        } else {
+                            audio.volume = 0;
+                            clearInterval(fadeInterval);
+                            audio.pause();
+                            audio.currentTime = 0;
+                        }
+                    }, 100);
+                    return;
+                }
+                    if (direction === -1 && currentBottom <= -initialOffset) {
+                        logos.style.transform = `translateX(-50%) translateY(${initialOffset}px)`;
+                        cancelAnimationFrame(animationId);
+                        return;
+                    }
+                    animationId = requestAnimationFrame(animate);
+                }
+                animate();
+            });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const nameParam = urlParams.get('playerName');
+        hint.classList.add('show');
+
+        if (nameParam !== null && nameParam !== '') {
+            const finalName = nameParam;
+            waitingForClick = true;
+
+            document.addEventListener('click', function clickHandler(e) {
+                if (waitingForClick) {
+                    waitingForClick = false;
+                    hint.classList.remove('show');
+                    hint.style.display = 'none';
+                    start(finalName);
+                    document.removeEventListener('click', clickHandler);
+                }
+            });
+        } else {
+            document.addEventListener('click', () => {
+                if (started) return;
+                const playerName = prompt('Enter your name:', 'PLAYERNAME');
+                if (playerName === null) return;
+                hint.classList.remove('show');
+                hint.style.display = 'none';
+                const finalName = playerName !== '' ? playerName : 'PLAYERNAME';
+                start(finalName);
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                spacePressed = true;
+                updateSpeed();
+            }
+            if (e.key === 'Control') {
+                e.preventDefault();
+                ctrlPressed = true;
+                updateSpeed();
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                direction = -1;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                spacePressed = false;
+                updateSpeed();
+            }
+            if (e.key === 'Control') {
+                e.preventDefault();
+                ctrlPressed = false;
+                updateSpeed();
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                direction = 1;
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (started) {
+                calculatePoemHeight();
+            }
+        });
+
+        document.fonts.ready.then(() => {
+            initCharMetrics();
+        });
+    </script>
+</body>
+</html>
