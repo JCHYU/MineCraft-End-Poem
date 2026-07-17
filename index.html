@@ -296,6 +296,7 @@ const postcreditsText = `§f"Twenty years from now you will be more disappointed
         let NARROW_CHAR_WIDTH = 0;
         let CHAR_HEIGHT = 0;
         let BASELINE_OFFSET = 0;
+        let ended = false;
 
         function initCharMetrics() {
             const poemText = document.getElementById('poemText');
@@ -635,19 +636,20 @@ const postcreditsText = `§f"Twenty years from now you will be more disappointed
                     const poemRect = poemContainer.getBoundingClientRect();
                     const poemTop = poemRect.top;
                     if (direction === 1 && poemTop + poemTotalHeight <= 0) {
-                    cancelAnimationFrame(animationId);
-                    const fadeInterval = setInterval(() => {
-                        if (audio.volume > 0.1) {
-                            audio.volume -= 0.1;
-                        } else {
-                            audio.volume = 0;
-                            clearInterval(fadeInterval);
-                            audio.pause();
-                            audio.currentTime = 0;
-                        }
-                    }, 100);
-                    return;
-                }
+                        cancelAnimationFrame(animationId);
+                        ended = true;
+                        const fadeInterval = setInterval(() => {
+                            if (audio.volume > 0.1) {
+                                audio.volume -= 0.1;
+                            } else {
+                                audio.volume = 0;
+                                clearInterval(fadeInterval);
+                                audio.pause();
+                                audio.currentTime = 0;
+                            }
+                        }, 100);
+                        return;
+                    }
                     if (direction === -1 && currentBottom <= -initialOffset) {
                         logos.style.transform = `translateX(-50%) translateY(${initialOffset}px)`;
                         cancelAnimationFrame(animationId);
@@ -689,6 +691,7 @@ const postcreditsText = `§f"Twenty years from now you will be more disappointed
         }
 
         document.addEventListener('keydown', (e) => {
+            if (ended) return;
             if (e.key === ' ') {
                 e.preventDefault();
                 spacePressed = true;
